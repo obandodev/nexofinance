@@ -1,0 +1,76 @@
+.balance-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.balance-card__glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--emerald-dim) 0%, transparent 70%);
+  top: -100px;
+  right: -60px;
+  pointer-events: none;
+}
+
+.balance-card__label {
+  position: relative;
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: 0.4rem;
+}
+
+.balance-card__value {
+  position: relative;
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--space-md);
+}
+
+.balance-card__row {
+  position: relative;
+  display: flex;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.balance-card__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.balance-card__stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.balance-card__stat-dot--income {
+  background: var(--emerald);
+}
+
+.balance-card__stat-dot--expense {
+  background: var(--amber);
+}
+
+.balance-card__stat-label {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.balance-card__stat-value {
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}

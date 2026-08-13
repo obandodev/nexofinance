@@ -1,0 +1,28 @@
+.expense-chart__empty {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-lg) 0;
+  text-align: center;
+}
+
+.expense-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
+  justify-content: center;
+  margin-top: var(--space-sm);
+}
+
+.expense-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.expense-chart__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}

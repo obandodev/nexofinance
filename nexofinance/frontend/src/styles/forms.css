@@ -1,0 +1,117 @@
+.form-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-sm);
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  border-color: var(--emerald);
+}
+
+.form-submit {
+  background: var(--emerald);
+  color: #04211a;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.form-submit:hover {
+  filter: brightness(1.08);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 0.6rem;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.tag--income {
+  background: var(--emerald-dim);
+  color: var(--emerald);
+}
+
+.tag--expense {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
+.tag--voided {
+  background: rgba(139, 146, 165, 0.15);
+  color: var(--text-muted);
+}
+
+.data-table__voided-row td {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.filters-bar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-sm);
+}
+
+.filters-bar input,
+.filters-bar select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.filters-bar__clear {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  padding: 0.5rem 1rem;
+  font-size: var(--text-xs);
+}
+
+.filters-bar__clear:hover {
+  border-color: var(--red);
+  color: var(--red);
+}

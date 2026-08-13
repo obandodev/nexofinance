@@ -1,0 +1,47 @@
+:root {
+  /* --- Superficies --- */
+  --bg: #0b0e14;
+  --surface: #141924;
+  --surface-hover: #1a2130;
+  --surface-glass: rgba(20, 25, 36, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* --- Acentos --- */
+  --emerald: #00d9a3;
+  --emerald-dim: rgba(0, 217, 163, 0.15);
+  --amber: #f5a623;
+  --amber-dim: rgba(245, 166, 35, 0.15);
+  --red: #ff5c5c;
+  --red-dim: rgba(255, 92, 92, 0.15);
+
+  /* --- Texto --- */
+  --text: #edeff3;
+  --text-muted: #8b92a5;
+  --text-faint: #565d6e;
+
+  /* --- Tipografia --- */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* --- Escala --- */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3.5rem;
+
+  /* --- Espaciado --- */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+
+  /* --- Bordes --- */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+}

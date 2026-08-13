@@ -1,0 +1,13 @@
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.panel__title {
+  font-size: var(--text-base);
+  color: var(--text);
+  margin-bottom: var(--space-sm);
+}

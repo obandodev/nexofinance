@@ -1,0 +1,2 @@
+import { formatCurrency } from "../utils/formatCurrency";
+export default function TransferHistory({transfers,accounts}){const name=id=>accounts.find(a=>a.id===id)?.name||`Cuenta #${id}`;return <table className="data-table"><thead><tr><th>Fecha</th><th>Desde</th><th>Hacia</th><th>Monto</th><th>Nota</th></tr></thead><tbody>{transfers.map(t=><tr key={t.id}><td>{t.transfer_date}</td><td>{name(t.from_account_id)}</td><td>{name(t.to_account_id)}</td><td>{formatCurrency(t.amount)}</td><td>{t.note||"—"}</td></tr>)}</tbody></table>}
