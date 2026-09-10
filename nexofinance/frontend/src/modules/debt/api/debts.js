@@ -15,6 +15,11 @@ export async function updateDebt(id, changes) {
   return response.data;
 }
 
+export async function cancelDebt(id) {
+  const response = await client.post(`/debts/${id}/cancel`);
+  return response.data;
+}
+
 export async function getDebtPayments(debtId) {
   const response = await client.get(`/debts/${debtId}/payments`);
   return response.data;

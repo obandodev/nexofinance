@@ -138,4 +138,12 @@ def create_debt_payment(
     db.commit()
     db.refresh(payment)
 
-    return payment
+    return {
+        "id": payment.id,
+        "debt_id": payment.debt_id,
+        "account_id": payment.account_id,
+        "account_name": account.name,
+        "amount": payment.amount,
+        "payment_date": payment.payment_date,
+        "note": payment.note,
+    }

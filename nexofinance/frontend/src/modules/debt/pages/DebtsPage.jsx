@@ -8,6 +8,7 @@ import DebtCard from "../components/DebtCard";
 import DebtForm from "../components/DebtForm";
 import DebtPaymentModal from "../components/DebtPaymentModal";
 import DebtPaymentsModal from "../components/DebtPaymentsModal";
+import CancelDebtModal from "../components/CancelDebtModal";
 
 import useDebts from "../hooks/useDebts";
 
@@ -24,10 +25,13 @@ export default function DebtsPage() {
     loadPayments,
     createDebt,
     createPayment,
+    cancelDebt,
   } = useDebts();
 
   const [paymentDebt, setPaymentDebt] = useState(null);
   const [paymentsDebt, setPaymentsDebt] = useState(null);
+  const [cancelDebtTarget, setCancelDebtTarget] = useState(null);
+  const [cancelError, setCancelError] = useState("");
 
   async function handleViewPayments(debt) {
     setPaymentsDebt(debt);
@@ -41,6 +45,23 @@ export default function DebtsPage() {
   async function handleCreatePayment(debtId, data) {
     await createPayment(debtId, data);
     setPaymentDebt(null);
+  }
+
+  function handleCancelClick(debt) {
+    setCancelError("");
+    setCancelDebtTarget(debt);
+  }
+
+  async function handleConfirmCancel() {
+    try {
+      await cancelDebt(cancelDebtTarget.id);
+      setCancelDebtTarget(null);
+    } catch (err) {
+      setCancelError(
+        err.response?.data?.detail ||
+          "No se pudo anular la deuda."
+      );
+    }
   }
 
   const totalToPay = debts
@@ -192,6 +213,7 @@ export default function DebtsPage() {
                   debt={debt}
                   onPayment={handlePayment}
                   onViewPayments={handleViewPayments}
+                  onCancel={handleCancelClick}
                 />
               ))}
             </div>
@@ -212,6 +234,14 @@ export default function DebtsPage() {
         loading={loadingPayments}
         open={Boolean(paymentsDebt)}
         onClose={() => setPaymentsDebt(null)}
+      />
+
+      <CancelDebtModal
+        debt={cancelDebtTarget}
+        open={Boolean(cancelDebtTarget)}
+        error={cancelError}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setCancelDebtTarget(null)}
       />
     </AppLayout>
   );

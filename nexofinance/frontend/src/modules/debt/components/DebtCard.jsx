@@ -1,9 +1,11 @@
+import { Ban } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
 
 export default function DebtCard({
   debt,
   onPayment,
   onViewPayments,
+  onCancel,
 }) {
   const total = Number(debt.total_amount || 0);
   const paid = Number(debt.paid_amount || 0);
@@ -17,6 +19,7 @@ export default function DebtCard({
 
   const isLoan = debt.debt_type === "loan";
   const completed = remaining === 0;
+  const cancelled = debt.status === "CANCELLED";
 
   return (
     <article className="debt-card">
@@ -68,7 +71,7 @@ export default function DebtCard({
       </div>
 
       <div className="debt-card__actions">
-        {!completed && (
+        {!completed && !cancelled && (
           <button
             type="button"
             className="form-submit"
@@ -85,11 +88,27 @@ export default function DebtCard({
         >
           Ver movimientos
         </button>
+
+        {!cancelled && (
+          <button
+            type="button"
+            className="confirm-btn danger"
+            onClick={() => onCancel(debt)}
+          >
+            <Ban size={16} /> Anular
+          </button>
+        )}
       </div>
 
-      {completed && (
+      {completed && !cancelled && (
         <div className="debt-card__completed">
           Deuda completada
+        </div>
+      )}
+
+      {cancelled && (
+        <div className="debt-card__completed">
+          Deuda anulada
         </div>
       )}
     </article>

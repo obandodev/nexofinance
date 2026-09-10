@@ -10,7 +10,7 @@ const LINKS = [
   { to: "/categorias", label: "Categorías" },
   { to: "/presupuestos", label: "Presupuestos" },
   { to: "/metas", label: "Metas de ahorro" },
-  { to: "/deudas", label: "Deudas" },
+  { to: "/deudas", label: "Deudas y prestamos" },
 ];
 
 export default function Sidebar() {

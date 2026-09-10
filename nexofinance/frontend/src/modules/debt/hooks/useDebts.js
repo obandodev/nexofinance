@@ -4,6 +4,7 @@ import {
   getDebts,
   createDebt,
   updateDebt,
+  cancelDebt,
   getDebtPayments,
   createDebtPayment,
 } from "../api/debts";
@@ -68,6 +69,14 @@ export default function useDebts() {
     [loadDebts]
   );
 
+  const handleCancelDebt = useCallback(
+    async (id) => {
+      await cancelDebt(id);
+      await loadDebts();
+    },
+    [loadDebts]
+  );
+
   const handleCreatePayment = useCallback(
     async (debtId, data) => {
       const payment = await createDebtPayment(debtId, data);
@@ -96,6 +105,7 @@ export default function useDebts() {
 
     createDebt: handleCreateDebt,
     updateDebt: handleUpdateDebt,
+    cancelDebt: handleCancelDebt,
     createPayment: handleCreatePayment,
   };
 }

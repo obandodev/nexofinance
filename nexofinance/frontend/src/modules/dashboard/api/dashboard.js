@@ -11,3 +11,8 @@ export async function getExpensesByCategory(month) {
   });
   return response.data;
 }
+
+export async function getFinancialInsights() {
+  const response = await client.get("/dashboard/insights");
+  return response.data;
+}

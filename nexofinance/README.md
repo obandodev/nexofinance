@@ -1,14 +1,19 @@
 # NexoFinance
 
-Plataforma multi-usuario para gestión financiera personal: cuentas, ingresos, gastos, presupuestos, metas de ahorro y deudas. Cualquier persona puede registrarse y solo ve su propia información.
+Plataforma multi-usuario para gestión financiera personal: cuentas, ingresos, gastos, presupuestos, metas de ahorro, deudas y préstamos. Cualquier persona puede registrarse y solo ve su propia información.
 
 ## Estructura
 
-```
 nexofinance/
-├── backend/     API en FastAPI + PostgreSQL
-└── frontend/    App en React + Vite
-```
+├── backend/ API en FastAPI + PostgreSQL
+└── frontend/ App en React + Vite
+
+
+## Stack técnico
+
+**Backend:** FastAPI, SQLAlchemy 2.0, PostgreSQL (`psycopg2-binary`), Alembic (migraciones), JWT (`python-jose`) + `passlib[bcrypt]` para autenticación, Pydantic v2.
+
+**Frontend:** React 18 + Vite, `react-router-dom`, `axios`, `recharts` (gráficas), `lucide-react` (iconos).
 
 ## Identidad visual
 
@@ -29,7 +34,16 @@ uvicorn app.main:app --reload
 
 API en `http://localhost:8000`, documentación interactiva en `http://localhost:8000/docs`.
 
-Al iniciar por primera vez, el backend crea las tablas y las categorías por defecto del sistema (Comida, Transporte, Salario, etc.), disponibles para todos los usuarios.
+Al iniciar por primera vez, el backend crea las tablas (`Base.metadata.create_all`) y las categorías por defecto del sistema (Comida, Transporte, Salario, etc.), disponibles para todos los usuarios.
+
+### Variables de entorno del backend (`backend/.env`)
+
+DATABASE_URL=postgresql://usuario:password@localhost:5432/nexofinance
+JWT_SECRET_KEY=una_clave_secreta_larga_y_aleatoria
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=480
+CORS_ORIGINS=http://localhost:5173
+
 
 ## Cómo levantar el frontend
 
@@ -42,26 +56,25 @@ npm run dev
 
 Abrir `http://localhost:5173`, crear una cuenta desde "Creá una gratis" en el login.
 
+### Variable de entorno del frontend (`frontend/.env`)
+
+VITE_API_URL=http://localhost:8000
+
+
 ## Modelo de datos
 
 - **User:** cualquier persona registrada, sin roles fijos.
-- **Account:** cuentas del usuario (ahorros, corriente, efectivo), cada una con su saldo.
-- **Category:** categorías de ingreso/gasto — hay defaults del sistema y el usuario puede crear las propias.
-- **Transaction:** movimientos de dinero, afectan el saldo de la cuenta automáticamente.
+- **Account:** cuentas del usuario (ahorros, corriente, efectivo), cada una con su saldo. El saldo no se edita manualmente, solo cambia por transacciones, transferencias, aportes o pagos.
+- **Category:** categorías de ingreso/gasto — hay defaults del sistema (`user_id = NULL`) y el usuario puede crear las propias.
+- **Transaction:** movimientos de dinero (ingreso/gasto), afectan el saldo de la cuenta automáticamente. Se pueden anular (`is_voided`) sin borrarse.
+- **Transfer:** movimiento de saldo entre dos cuentas del mismo usuario.
 - **Budget:** límite mensual de gasto por categoría.
-- **SavingsGoal:** metas de ahorro con progreso.
-- **Debt:** deudas propias o préstamos hechos a terceros.
+- **SavingsGoal / SavingsContribution:** metas de ahorro con aportes; una meta se puede anular (estado `CANCELLED`) si no tiene aportes activos.
+- **Debt / DebtPayment:** deudas propias (`debt_type = "debt"`) o préstamos hechos a terceros (`debt_type = "loan"`), con sus pagos/cobros asociados. Estados: `PENDING`, `PARTIAL`, `PAID`, `CANCELLED`. Una deuda solo se puede anular si todavía no tiene pagos registrados.
 
 ## Aislamiento de datos (multi-tenancy)
 
 Cada tabla de negocio tiene un campo `user_id`. Todos los endpoints filtran automáticamente por el usuario del token de sesión — nadie puede ver ni modificar datos de otra cuenta, sin excepciones.
-
-## Despliegue sugerido
-
-- **Backend + base de datos:** Railway o Render (PostgreSQL administrado).
-- **Frontend:** Netlify.
-
-Configurar `CORS_ORIGINS` en el backend con la URL real del frontend, y `VITE_API_URL` en el frontend con la URL real del backend.
 
 ## Arquitectura modular
 
@@ -69,15 +82,15 @@ El proyecto está organizado por dominio. Cada módulo del backend agrupa su mod
 
 ```text
 backend/app/modules/
-├── accounts/
-├── auth/
-├── budgets/
-├── categories/
-├── dashboard/
-├── debts/
-├── savings/
-├── transactions/
-└── transfers/
+├── accounts/       Cuentas del usuario
+├── auth/           Registro, login, sesión
+├── budgets/        Presupuestos mensuales por categoría
+├── categories/     Categorías de ingreso/gasto
+├── dashboard/      Resumen general para el usuario
+├── debts/          Deudas y préstamos (con pagos y anulación)
+├── savings/        Metas de ahorro y aportes
+├── transactions/   Ingresos y gastos
+└── transfers/      Transferencias entre cuentas
 ```
 
 El frontend sigue la misma idea con módulos por funcionalidad:
@@ -97,17 +110,49 @@ frontend/src/modules/
 
 Los componentes genéricos como `AppLayout`, `Panel`, `Modal`, `ConfirmModal` y `SuccessModal` permanecen compartidos. Los iconos de interfaz utilizan `lucide-react`.
 
-### Dependencia nueva del frontend
+### Endpoints por módulo
 
-Después de obtener esta versión, ejecutar:
+**`/debts`**
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/debts/` | Lista deudas/préstamos del usuario, con `paid_amount` y `pending_amount` calculados |
+| POST | `/debts/` | Crea una deuda o préstamo |
+| PATCH | `/debts/{id}` | Edita nombre, monto total o fecha límite |
+| POST | `/debts/{id}/cancel` | Anula una deuda (solo si no tiene pagos registrados) |
+| POST | `/debts/{id}/payments` | Registra un pago (si `debt`) o cobro (si `loan`); afecta el saldo de la cuenta |
+| GET | `/debts/{id}/payments` | Lista los pagos/cobros de una deuda |
+
+**`/savings-goals`**
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/savings-goals/` | Lista metas de ahorro |
+| POST | `/savings-goals/` | Crea una meta |
+| PATCH | `/savings-goals/{id}` | Edita una meta |
+| POST | `/savings-goals/{id}/cancel` | Anula una meta (solo si no tiene aportes activos) |
+| POST | `/savings-goals/{id}/contributions` | Registra un aporte |
+| GET | `/savings-goals/{id}/contributions` | Lista los aportes de una meta |
+| PATCH | `/savings-goals/contributions/{id}` | Edita un aporte |
+| POST | `/savings-goals/contributions/{id}/cancel` | Anula un aporte |
+
+**`/accounts`, `/categories`, `/transactions`, `/transfers`, `/budgets`, `/dashboard`, `/auth`**
+
+CRUD estándar por dominio, siguiendo la misma convención modular (un archivo por endpoint dentro de `routers/`).
+
+## Migraciones (Alembic)
+
+El primer arranque del backend crea las tablas automáticamente vía SQLAlchemy (`Base.metadata.create_all` en `app/startup.py`), **no** vía Alembic. Alembic (`backend/migrations/`) se usa para versionar cambios de esquema posteriores a esa creación inicial:
 
 ```bash
-cd frontend
-npm install
+cd backend
+alembic revision --autogenerate -m "descripcion del cambio"
+alembic upgrade head
 ```
 
-Esto instala `lucide-react` y mantiene el `package-lock.json` alineado.
+## Despliegue sugerido
 
-### Nota sobre deudas
+- **Backend + base de datos:** Railway o Render (PostgreSQL administrado).
+- **Frontend:** Netlify.
 
-La página de deudas fue trasladada al módulo `frontend/src/modules/debt/`, pero su rediseño funcional queda pendiente para la siguiente etapa.
+Configurar `CORS_ORIGINS` en el backend con la URL real del frontend, y `VITE_API_URL` en el frontend con la URL real del backend.

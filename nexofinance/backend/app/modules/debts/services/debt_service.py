@@ -33,7 +33,6 @@ def _calculate_paid_amount(
         )
         .scalar()
     )
-
     return float(result or 0)
 
 
@@ -45,18 +44,44 @@ def _update_status(
         db,
         debt.id,
     )
-
     if debt.status == "CANCELLED":
         return
-
     if paid_amount <= 0:
         debt.status = "PENDING"
-
     elif paid_amount < debt.total_amount:
         debt.status = "PARTIAL"
-
     else:
         debt.status = "PAID"
+
+
+def _serialize_debt(
+    db: Session,
+    debt: Debt,
+):
+    """
+    Arma el dict de salida de una deuda, incluyendo
+    paid_amount y pending_amount calculados (no son
+    columnas de la tabla).
+    """
+    paid_amount = _calculate_paid_amount(
+        db,
+        debt.id,
+    )
+    pending_amount = max(
+        debt.total_amount - paid_amount,
+        0,
+    )
+
+    return {
+        "id": debt.id,
+        "name": debt.name,
+        "debt_type": debt.debt_type,
+        "total_amount": debt.total_amount,
+        "paid_amount": paid_amount,
+        "pending_amount": pending_amount,
+        "status": debt.status,
+        "due_date": debt.due_date,
+    }
 
 
 def list_debts(
@@ -67,34 +92,10 @@ def list_debts(
         db,
         user_id,
     )
-
-    result = []
-
-    for debt in debts:
-        paid_amount = _calculate_paid_amount(
-            db,
-            debt.id,
-        )
-
-        pending_amount = max(
-            debt.total_amount - paid_amount,
-            0,
-        )
-
-        result.append(
-            {
-                "id": debt.id,
-                "name": debt.name,
-                "debt_type": debt.debt_type,
-                "total_amount": debt.total_amount,
-                "paid_amount": paid_amount,
-                "pending_amount": pending_amount,
-                "status": debt.status,
-                "due_date": debt.due_date,
-            }
-        )
-
-    return result
+    return [
+        _serialize_debt(db, debt)
+        for debt in debts
+    ]
 
 
 def create_debt(
@@ -105,11 +106,9 @@ def create_debt(
     validate_debt_type(
         data.debt_type
     )
-
     validate_total_amount(
         data.total_amount
     )
-
     debt = Debt(
         user_id=user_id,
         name=data.name,
@@ -118,22 +117,67 @@ def create_debt(
         due_date=data.due_date,
         status="PENDING",
     )
-
     create(
         db,
         debt,
     )
-
     db.commit()
     db.refresh(debt)
-
-    return debt
+    return _serialize_debt(db, debt)
 
 
 def update_debt(
     db: Session,
     debt_id: int,
     data,
+    user_id: int,
+):
+    debt = get_for_user(
+        db,
+        debt_id,
+        user_id,
+    )
+    if not debt:
+        raise HTTPException(
+            status_code=404,
+            detail="Deuda no encontrada.",
+        )
+    changes = data.model_dump(
+        exclude_unset=True
+    )
+    if "total_amount" in changes:
+        validate_total_amount(
+            changes["total_amount"]
+        )
+        paid_amount = _calculate_paid_amount(
+            db,
+            debt.id,
+        )
+        if changes["total_amount"] < paid_amount:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "El monto total no puede ser menor "
+                    "al monto ya pagado."
+                ),
+            )
+    for field, value in changes.items():
+        setattr(
+            debt,
+            field,
+            value,
+        )
+    _update_status(
+        db,
+        debt,
+    )
+    db.commit()
+    db.refresh(debt)
+    return _serialize_debt(db, debt)
+
+def cancel_debt(
+    db: Session,
+    debt_id: int,
     user_id: int,
 ):
     debt = get_for_user(
@@ -148,42 +192,29 @@ def update_debt(
             detail="Deuda no encontrada.",
         )
 
-    changes = data.model_dump(
-        exclude_unset=True
-    )
-
-    if "total_amount" in changes:
-        validate_total_amount(
-            changes["total_amount"]
+    if debt.status == "CANCELLED":
+        raise HTTPException(
+            status_code=400,
+            detail="La deuda ya se encuentra anulada.",
         )
 
-        paid_amount = _calculate_paid_amount(
-            db,
-            debt.id,
-        )
-
-        if changes["total_amount"] < paid_amount:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "El monto total no puede ser menor "
-                    "al monto ya pagado."
-                ),
-            )
-
-    for field, value in changes.items():
-        setattr(
-            debt,
-            field,
-            value,
-        )
-
-    _update_status(
+    paid_amount = _calculate_paid_amount(
         db,
-        debt,
+        debt.id,
     )
+
+    if paid_amount > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "No puedes anular una deuda que ya "
+                "tiene pagos registrados."
+            ),
+        )
+
+    debt.status = "CANCELLED"
 
     db.commit()
     db.refresh(debt)
 
-    return debt
+    return _serialize_debt(db, debt)

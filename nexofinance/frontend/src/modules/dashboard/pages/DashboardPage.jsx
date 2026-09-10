@@ -3,16 +3,24 @@ import AppLayout from "../../../components/AppLayout";
 import BalanceCard from "../../../components/BalanceCard";
 import ExpenseChart from "../../../components/ExpenseChart";
 import Panel from "../../../components/Panel";
-import { getDashboardSummary, getExpensesByCategory } from "../api/dashboard";
+import InsightsPanel from "../components/InsightsPanel";
+import {
+  getDashboardSummary,
+  getExpensesByCategory,
+  getFinancialInsights,
+} from "../api/dashboard";
 import "../styles/Dashboard.css";
+import "../styles/InsightsPanel.css";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [insights, setInsights] = useState(null);
 
   useEffect(() => {
     getDashboardSummary().then(setSummary);
     getExpensesByCategory().then(setExpenses);
+    getFinancialInsights().then(setInsights);
   }, []);
 
   return (
@@ -32,6 +40,10 @@ export default function Dashboard() {
           <ExpenseChart data={expenses} />
         </Panel>
       </div>
+
+      <Panel title="Coaching financiero">
+        <InsightsPanel insights={insights} />
+      </Panel>
     </AppLayout>
   );
 }
