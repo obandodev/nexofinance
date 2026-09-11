@@ -37,6 +37,9 @@
 }
 
 .sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   color: var(--text-muted);
   text-decoration: none;
   padding: 0.65rem 0.75rem;
@@ -44,6 +47,10 @@
   font-size: var(--text-sm);
   font-weight: 500;
   transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar__link-icon {
+  flex-shrink: 0;
 }
 
 .sidebar__link:hover {

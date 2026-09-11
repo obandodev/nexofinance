@@ -11,6 +11,6 @@ export async function createTransaction(transaction) {
 }
 
 export async function voidTransaction(id, reason) {
-  const response = await client.patch(`/transactions/${id}/void`, { reason });
+  const response = await client.post(`/transactions/${id}/void`, { reason });
   return response.data;
 }

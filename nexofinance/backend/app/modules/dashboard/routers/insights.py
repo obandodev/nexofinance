@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -13,7 +14,8 @@ router = APIRouter()
 
 @router.get("/insights", response_model=FinancialInsights)
 def endpoint(
+    month: Optional[str] = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    return get_insights(db, user.id)
+    return get_insights(db, user.id, month)

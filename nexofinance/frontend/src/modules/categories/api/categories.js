@@ -10,6 +10,11 @@ export async function createCategory(category) {
   return response.data;
 }
 
+export async function updateCategory(id, changes) {
+  const response = await client.patch(`/categories/${id}`, changes);
+  return response.data;
+}
+
 export async function deleteCategory(id) {
   await client.delete(`/categories/${id}`);
 }

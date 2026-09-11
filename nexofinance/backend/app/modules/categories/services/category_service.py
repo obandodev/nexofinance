@@ -11,6 +11,20 @@ def create_category(db, data, user_id):
     category = Category(**data.model_dump(), user_id=user_id)
     db.add(category); db.commit(); db.refresh(category); return category
 
+def update_category(db, category_id, data, user_id):
+    category = get(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    validate_custom_category(category, user_id)
+
+    changes = data.model_dump(exclude_unset=True)
+    for field, value in changes.items():
+        setattr(category, field, value)
+
+    db.commit()
+    db.refresh(category)
+    return category
+
 def delete_category(db, category_id, user_id):
     category = get(db, category_id)
     if not category: raise HTTPException(status_code=404, detail="Categoría no encontrada")

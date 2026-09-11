@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./modules/auth/pages/Login";
 import Signup from "./modules/auth/pages/Signup";
 import ForgotPassword from "./modules/auth/pages/ForgotPassword";
+import ProfilePage from "./modules/auth/pages/ProfilePage";
 import DashboardPage from "./modules/dashboard/pages/DashboardPage";
 import AccountsPage from "./modules/accounts/pages/AccountsPage";
 import TransactionsPage from "./modules/transactions/pages/TransactionsPage";
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/deudas" element={<Protected><DebtsPage /></Protected>} />
         <Route path="/categorias" element={<Protected><CategoriesPage /></Protected>} />
         <Route path="/transferencias" element={<Protected><TransfersPage /></Protected>} />
+        <Route path="/perfil" element={<Protected><ProfilePage /></Protected>} />
       </Routes>
     </AuthProvider>
   );

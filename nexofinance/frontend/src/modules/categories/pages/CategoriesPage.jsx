@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AppLayout from "../../../components/AppLayout";
 import Panel from "../../../components/Panel";
 import ConfirmModal from "../../../components/ConfirmModal";
-import { getCategories, createCategory, deleteCategory } from "../api/categories";
+import { getCategories, createCategory, updateCategory, deleteCategory } from "../api/categories";
 import "../../../styles/forms.css";
 import "../styles/Categories.css";
 
@@ -15,6 +15,11 @@ export default function Categories() {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  const [categoryToEdit, setCategoryToEdit] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editError, setEditError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
 
   function loadCategories() {
     getCategories().then(setCategories);
@@ -53,6 +58,24 @@ export default function Categories() {
     }
   }
 
+  function openEditModal(category) {
+    setEditError("");
+    setCategoryToEdit(category);
+    setEditName(category.name);
+    setShowEditModal(true);
+  }
+
+  async function handleEditSave() {
+    try {
+      await updateCategory(categoryToEdit.id, { name: editName });
+      setShowEditModal(false);
+      setCategoryToEdit(null);
+      loadCategories();
+    } catch (err) {
+      setEditError(err.response?.data?.detail || "No se pudo editar la categoría");
+    }
+  }
+
   const expenseCategories = categories.filter((c) => c.category_type === "expense");
   const incomeCategories = categories.filter((c) => c.category_type === "income");
 
@@ -62,13 +85,22 @@ export default function Categories() {
       <span key={c.id} className={`tag ${c.category_type === "income" ? "tag--income" : "tag--expense"}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
         {c.name} {isSystem && "· sistema"}
         {!isSystem && (
-          <button
-            className="filters-bar__clear"
-            style={{ padding: "0.1rem 0.5rem", fontSize: "0.65rem" }}
-            onClick={() => openDeleteConfirm(c)}
-          >
-            ×
-          </button>
+          <>
+            <button
+              className="filters-bar__clear"
+              style={{ padding: "0.1rem 0.5rem", fontSize: "0.65rem" }}
+              onClick={() => openEditModal(c)}
+            >
+              editar
+            </button>
+            <button
+              className="filters-bar__clear"
+              style={{ padding: "0.1rem 0.5rem", fontSize: "0.65rem" }}
+              onClick={() => openDeleteConfirm(c)}
+            >
+              ×
+            </button>
+          </>
         )}
       </span>
     );
@@ -117,6 +149,34 @@ export default function Categories() {
           onCancel={() => {
             setCategoryToDelete(null);
             setShowDeleteConfirm(false);
+          }}
+        />
+      )}
+
+      {categoryToEdit && (
+        <ConfirmModal
+          open={showEditModal}
+          title="Editar categoría"
+          message={
+            <>
+              <input
+                className="auth__input"
+                style={{ width: "100%" }}
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Nombre de la categoría"
+              />
+              {editError && (
+                <p style={{ color: "var(--red)", marginTop: "0.5rem" }}>{editError}</p>
+              )}
+            </>
+          }
+          confirmText="Guardar"
+          cancelText="Cancelar"
+          onConfirm={handleEditSave}
+          onCancel={() => {
+            setCategoryToEdit(null);
+            setShowEditModal(false);
           }}
         />
       )}

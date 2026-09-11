@@ -1,16 +1,29 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Wallet,
+  ArrowLeftRight,
+  Receipt,
+  Tags,
+  PiggyBank,
+  Target,
+  HandCoins,
+  UserCircle,
+  LogOut,
+} from "lucide-react";
 import { useAuth } from "../modules/auth/context/AuthContext";
 import "./Sidebar.css";
 
 const LINKS = [
-  { to: "/dashboard", label: "Resumen" },
-  { to: "/cuentas", label: "Cuentas" },
-  { to: "/transferencias", label: "Transferencias" },
-  { to: "/transacciones", label: "Transacciones" },
-  { to: "/categorias", label: "Categorías" },
-  { to: "/presupuestos", label: "Presupuestos" },
-  { to: "/metas", label: "Metas de ahorro" },
-  { to: "/deudas", label: "Deudas y prestamos" },
+  { to: "/dashboard", label: "Resumen", icon: LayoutDashboard },
+  { to: "/cuentas", label: "Cuentas", icon: Wallet },
+  { to: "/transferencias", label: "Transferencias", icon: ArrowLeftRight },
+  { to: "/transacciones", label: "Transacciones", icon: Receipt },
+  { to: "/categorias", label: "Categorías", icon: Tags },
+  { to: "/presupuestos", label: "Presupuestos", icon: PiggyBank },
+  { to: "/metas", label: "Metas de ahorro", icon: Target },
+  { to: "/deudas", label: "Deudas", icon: HandCoins },
+  { to: "/perfil", label: "Mi perfil", icon: UserCircle },
 ];
 
 export default function Sidebar() {
@@ -30,16 +43,23 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar__nav">
-        {LINKS.map((link) => (
-          <NavLink key={link.to} to={link.to} className="sidebar__link">
-            {link.label}
-          </NavLink>
-        ))}
+        {LINKS.map((link) => {
+          const Icon = link.icon;
+          return (
+            <NavLink key={link.to} to={link.to} className="sidebar__link">
+              <Icon size={17} className="sidebar__link-icon" />
+              {link.label}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div className="sidebar__footer">
         <span className="sidebar__user">{user?.full_name}</span>
-        <button className="sidebar__logout" onClick={handleLogout}>Cerrar sesión</button>
+        <button className="sidebar__logout" onClick={handleLogout}>
+          <LogOut size={14} style={{ marginRight: "0.4rem" }} />
+          Cerrar sesión
+        </button>
       </div>
     </aside>
   );

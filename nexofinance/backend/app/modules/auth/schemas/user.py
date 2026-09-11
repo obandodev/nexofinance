@@ -34,3 +34,12 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     user: UserOut
     recovery_code: Optional[str] = None
+
+
+class ProfileUpdate(BaseModel):
+    full_name: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-// Anima un numero desde 0 hasta el valor final, con easing suave.
-// No sabe nada de dinero ni de UI: solo entrega un numero que va cambiando.
 export function useCountUp(target, durationMs = 1200) {
   const [value, setValue] = useState(0);
 

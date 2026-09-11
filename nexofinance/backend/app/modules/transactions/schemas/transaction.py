@@ -30,3 +30,10 @@ class TransactionOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TransactionPage(BaseModel):
+    items: list[TransactionOut]
+    total: int
+    page: int
+    page_size: int

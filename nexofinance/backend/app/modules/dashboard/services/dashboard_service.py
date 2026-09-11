@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.modules.budgets.services.budget_service import get_budget_progress
 
 from app.modules.dashboard.repositories.repository import (
@@ -21,9 +23,12 @@ from app.modules.dashboard.schemas.dashboard import (
 )
 
 
-def get_summary(db, user_id):
-    from datetime import date
-    month = date.today().strftime("%Y-%m")
+def _resolve_month(month):
+    return month or date.today().strftime("%Y-%m")
+
+
+def get_summary(db, user_id, month=None):
+    month = _resolve_month(month)
     income, expense = monthly_totals(db, user_id, month)
     return DashboardSummary(
         total_balance=float(active_balance(db, user_id)),
@@ -40,14 +45,15 @@ def get_expenses_by_category(db, user_id, month):
     ]
 
 
-def get_insights(db, user_id) -> FinancialInsights:
-    months = last_n_months(6)
+def get_insights(db, user_id, month=None):
+    current_month = _resolve_month(month)
+    months = last_n_months(6, end_month=current_month)
 
     trend = []
     deficit_months = 0
 
-    for month in months:
-        income, expense = monthly_totals(db, user_id, month)
+    for m in months:
+        income, expense = monthly_totals(db, user_id, m)
         net = income - expense
         is_deficit = net < 0
 
@@ -56,7 +62,7 @@ def get_insights(db, user_id) -> FinancialInsights:
 
         trend.append(
             MonthlyTrend(
-                month=month,
+                month=m,
                 income=income,
                 expense=expense,
                 net=net,
@@ -65,7 +71,6 @@ def get_insights(db, user_id) -> FinancialInsights:
         )
 
     current = trend[-1]
-    current_month = current.month
 
     savings_rate = (
         (current.net / current.income) * 100
@@ -142,27 +147,19 @@ def get_insights(db, user_id) -> FinancialInsights:
     )
 
 
-def _build_tips(
-    current,
-    deficit_months,
-    top_categories,
-    budget_alerts,
-    debt_load,
-    saved_month,
-    debt_paid_month,
-):
+def _build_tips(current, deficit_months, top_categories, budget_alerts, debt_load, saved_month, debt_paid_month):
     tips = []
 
     if current.net < 0:
         tips.append(
-            "Este mes tus gastos superaron tus ingresos. Revisa qué "
-            "categorías puedes recortar antes de que termine el mes."
+            "Este mes tus gastos superaron tus ingresos. Revisa que "
+            "categorias puedes recortar antes de que termine el mes."
         )
 
     if deficit_months >= 3:
         tips.append(
-            f"Llevas {deficit_months} de los últimos 6 meses en déficit "
-            "(gastando más de lo que ingresa). Vale la pena revisar tus "
+            f"Llevas {deficit_months} de los ultimos 6 meses en deficit "
+            "(gastando mas de lo que ingresa). Vale la pena revisar tus "
             "gastos fijos."
         )
 
@@ -173,11 +170,11 @@ def _build_tips(
             tips.append(
                 "Tu tasa de ahorro este mes es menor al 10% de tus "
                 "ingresos. Intenta apartar al menos un 10-20% antes de "
-                "gastar en lo demás."
+                "gastar en lo demas."
             )
         elif rate >= 20:
             tips.append(
-                "Buen trabajo: estás ahorrando más del 20% de tus "
+                "Buen trabajo: estas ahorrando mas del 20% de tus "
                 "ingresos este mes."
             )
 
@@ -188,7 +185,7 @@ def _build_tips(
             tips.append(
                 f"'{leader.category_name}' concentra el "
                 f"{leader.percentage:.0f}% de tus gastos del mes. Es tu "
-                "categoría con mayor peso — revisa si hay margen para "
+                "categoria con mayor peso, revisa si hay margen para "
                 "reducirla."
             )
 
@@ -216,12 +213,12 @@ def _build_tips(
             partes.append(f"abonaste {debt_paid_month:,.0f} a deudas")
 
         tips.append(
-            "Además de tus gastos normales, este mes " + " y ".join(partes) +
+            "Ademas de tus gastos normales, este mes " + " y ".join(partes) +
             ". Ese dinero no cuenta como gasto porque sigue siendo tuyo "
-            "o reduce lo que debes — es progreso real, no consumo."
+            "o reduce lo que debes, es progreso real, no consumo."
         )
 
     if not tips:
-        tips.append("Tus finanzas se ven equilibradas este mes. Sigue así.")
+        tips.append("Tus finanzas se ven equilibradas este mes. Sigue asi.")
 
     return tips

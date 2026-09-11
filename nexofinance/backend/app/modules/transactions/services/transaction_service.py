@@ -84,8 +84,10 @@ def get_transactions(
     date_from=None,
     date_to=None,
     search=None,
+    page: int = 1,
+    page_size: int = 20,
 ):
-    """Devuelve TODAS las transacciones del usuario (incluidas las anuladas), con filtros opcionales."""
+    """Devuelve una PÁGINA de transacciones del usuario (incluidas las anuladas), con filtros opcionales."""
     query = db.query(Transaction).filter(Transaction.user_id == user_id)
 
     if account_id:
@@ -101,4 +103,18 @@ def get_transactions(
     if search:
         query = query.filter(Transaction.note.ilike(f"%{search}%"))
 
-    return query.order_by(Transaction.transaction_date.desc()).all()
+    total = query.count()
+
+    items = (
+        query.order_by(Transaction.transaction_date.desc(), Transaction.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }

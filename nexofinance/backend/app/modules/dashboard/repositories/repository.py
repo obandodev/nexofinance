@@ -37,10 +37,14 @@ def expenses_by_category(db: Session, user_id: int, month: str):
     ).group_by(Category.name).all()
 
 
-def last_n_months(n: int) -> list[str]:
-    """Genera los ultimos n meses en formato YYYY-MM, del mas antiguo al mas reciente."""
-    today = date.today()
-    year, month = today.year, today.month
+def last_n_months(n: int, end_month: str = None) -> list[str]:
+    """Genera los ultimos n meses en formato YYYY-MM, del mas antiguo al mas reciente,
+    terminando en end_month (si no se da, termina en el mes actual real)."""
+    if end_month:
+        year, month = map(int, end_month.split("-"))
+    else:
+        today = date.today()
+        year, month = today.year, today.month
 
     months = []
     for _ in range(n):
@@ -82,8 +86,6 @@ def pending_debt_totals(db: Session, user_id: int):
 
 
 def total_saved_month(db: Session, user_id: int, month: str) -> float:
-    """Suma los aportes activos a metas de ahorro en un mes. No es un gasto:
-    el dinero sigue siendo del usuario, solo cambia de lugar."""
     result = (
         db.query(func.coalesce(func.sum(SavingsContribution.amount), 0))
         .filter(
@@ -97,8 +99,6 @@ def total_saved_month(db: Session, user_id: int, month: str) -> float:
 
 
 def total_debt_paid_month(db: Session, user_id: int, month: str) -> float:
-    """Suma los pagos hechos en el mes sobre deudas propias (debt_type='debt').
-    No es un gasto: reduce lo que el usuario debe, mejora su patrimonio neto."""
     result = (
         db.query(func.coalesce(func.sum(DebtPayment.amount), 0))
         .join(Debt, Debt.id == DebtPayment.debt_id)

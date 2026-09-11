@@ -8,6 +8,11 @@ class CategoryCreate(BaseModel):
     icon: Optional[str] = None
 
 
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    icon: Optional[str] = None
+
+
 class CategoryOut(BaseModel):
     id: int
     name: str

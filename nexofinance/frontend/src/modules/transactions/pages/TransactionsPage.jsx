@@ -10,6 +10,8 @@ import { getBudgetProgress } from "../../budgets/api/budgets";
 import "../../../styles/forms.css";
 import "../styles/Transactions.css";
 
+const PAGE_SIZE = 20;
+
 function formatCurrency(value) {
   return value.toLocaleString("es-CO", {
     style: "currency",
@@ -22,6 +24,9 @@ export default function Transactions() {
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingList, setLoadingList] = useState(true);
 
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -46,11 +51,14 @@ export default function Transactions() {
   const [budgetWarning, setBudgetWarning] = useState(null);
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
 
-  // Alerta para cuentas inactivas
   const [showInactiveAccountWarning, setShowInactiveAccountWarning] = useState(false);
   const [inactiveAccountName, setInactiveAccountName] = useState("");
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
   function loadTransactions() {
+    setLoadingList(true);
     getTransactions({
       account_id: filterAccount || undefined,
       category_id: filterCategory || undefined,
@@ -58,7 +66,13 @@ export default function Transactions() {
       date_from: filterFrom || undefined,
       date_to: filterTo || undefined,
       search: filterSearch || undefined,
-    }).then(setTransactions);
+      page,
+      page_size: PAGE_SIZE,
+    }).then((data) => {
+      setTransactions(data.items);
+      setTotal(data.total);
+      setLoadingList(false);
+    });
   }
 
   useEffect(() => {
@@ -68,9 +82,17 @@ export default function Transactions() {
 
   useEffect(() => {
     loadTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterAccount, filterCategory, filterType, filterFrom, filterTo, filterSearch, page]);
+
+  // Si cambian los filtros, siempre volvemos a la página 1
+  useEffect(() => {
+    setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterAccount, filterCategory, filterType, filterFrom, filterTo, filterSearch]);
 
   const filteredCategories = categories.filter((c) => c.category_type === type);
+  const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
 
   async function actuallyCreate(transactionData) {
     try {
@@ -78,6 +100,7 @@ export default function Transactions() {
 
       setAmount("");
       setNote("");
+      setPage(1);
       loadTransactions();
     } catch (error) {
       const message = error.response?.data?.detail || "";
@@ -92,7 +115,8 @@ export default function Transactions() {
         return;
       }
 
-      alert(message || "No se pudo registrar la transacción.");
+      setErrorMessage(message || "No se pudo registrar la transacción.");
+      setShowErrorModal(true);
     }
   }
 
@@ -325,75 +349,130 @@ export default function Transactions() {
           </button>
         </div>
 
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Cuenta</th>
-              <th>Categoría</th>
-              <th>Tipo</th>
-              <th>Monto</th>
-              <th>Nota</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+        {loadingList ? (
+          <p style={{ color: "var(--text-muted)", padding: "1rem 0" }}>
+            Cargando transacciones...
+          </p>
+        ) : (
+          <>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Cuenta</th>
+                  <th>Categoría</th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>Nota</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
 
-          <tbody>
-            {transactions.map((t) => (
-              <tr
-                key={t.id}
-                className={
-                  t.is_voided
-                    ? "data-table__voided-row"
-                    : ""
-                }
-              >
-                <td>{t.transaction_date}</td>
-                <td>{accountName(t.account_id)}</td>
-                <td>{categoryName(t.category_id)}</td>
-
-                <td>
-                  <span
-                    className={`tag ${
-                      t.transaction_type === "income"
-                        ? "tag--income"
-                        : "tag--expense"
-                    }`}
+              <tbody>
+                {transactions.map((t) => (
+                  <tr
+                    key={t.id}
+                    className={
+                      t.is_voided
+                        ? "data-table__voided-row"
+                        : ""
+                    }
                   >
-                    {t.transaction_type === "income"
-                      ? "Ingreso"
-                      : "Gasto"}
-                  </span>
-                </td>
+                    <td>{t.transaction_date}</td>
+                    <td>{accountName(t.account_id)}</td>
+                    <td>{categoryName(t.category_id)}</td>
 
-                <td>{formatCurrency(t.amount)}</td>
-                <td>{t.note || "—"}</td>
+                    <td>
+                      <span
+                        className={`tag ${
+                          t.transaction_type === "income"
+                            ? "tag--income"
+                            : "tag--expense"
+                        }`}
+                      >
+                        {t.transaction_type === "income"
+                          ? "Ingreso"
+                          : "Gasto"}
+                      </span>
+                    </td>
 
-                <td>
-                  {t.is_voided ? (
-                    <span className="tag tag--voided">
-                      Anulada
-                    </span>
-                  ) : (
-                    "Activa"
-                  )}
-                </td>
+                    <td>{formatCurrency(t.amount)}</td>
+                    <td>{t.note || "—"}</td>
 
-                <td>
-                  {!t.is_voided && (
-                    <button
-                      className="form-submit"
-                      onClick={() => openVoidModal(t)}
-                    >
-                      Anular
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    <td>
+                      {t.is_voided ? (
+                        <span className="tag tag--voided">
+                          Anulada
+                        </span>
+                      ) : (
+                        "Activa"
+                      )}
+                    </td>
+
+                    <td>
+                      {!t.is_voided && (
+                        <button
+                          className="form-submit"
+                          onClick={() => openVoidModal(t)}
+                        >
+                          Anular
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+
+                {transactions.length === 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)" }}>
+                      No hay transacciones para estos filtros.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "1rem",
+                fontSize: "var(--text-sm)",
+                color: "var(--text-muted)",
+              }}
+            >
+              <span>
+                {total === 0
+                  ? "0 resultados"
+                  : `Mostrando ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} de ${total}`}
+              </span>
+
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  className="filters-bar__clear"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                >
+                  Anterior
+                </button>
+
+                <span>
+                  Página {page} de {totalPages}
+                </span>
+
+                <button
+                  className="filters-bar__clear"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </Panel>
 
       {selectedTransaction && (
@@ -491,6 +570,16 @@ export default function Transactions() {
           }}
         />
       )}
+
+      <ConfirmModal
+        open={showErrorModal}
+        title="No se pudo registrar el movimiento"
+        message={<p>{errorMessage}</p>}
+        confirmText="Entendido"
+        cancelText="Cerrar"
+        onConfirm={() => setShowErrorModal(false)}
+        onCancel={() => setShowErrorModal(false)}
+      />
 
       <SuccessModal
         open={showVoidSuccess}

@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from app.modules.auth.models.user import User
-from app.modules.auth.repositories.repository import get_by_email
+from app.modules.auth.repositories.repository import get_by_email, get_by_id
 from app.auth.security import hash_password, verify_password, create_access_token
 from app.utils.recovery_code import generate_recovery_code, hash_recovery_code, verify_recovery_code
 
@@ -26,4 +26,25 @@ def recover_password(db, data):
     if not verify_recovery_code(data.recovery_code, user.recovery_code_hash):
         raise HTTPException(status_code=400, detail="El código de recuperación es incorrecto.")
     user.hashed_password = hash_password(data.new_password); db.commit()
+    return {"message": "Contraseña actualizada correctamente."}
+
+def update_profile(db, user_id, data):
+    user = get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    user.full_name = data.full_name
+    db.commit()
+    db.refresh(user)
+    return user
+
+def change_password(db, user_id, data):
+    user = get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    if not verify_password(data.current_password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="La contraseña actual no es correcta.")
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres.")
+    user.hashed_password = hash_password(data.new_password)
+    db.commit()
     return {"message": "Contraseña actualizada correctamente."}
