@@ -100,3 +100,23 @@
   font-weight: 600;
   color: var(--text);
 }
+@media (max-width: 640px) {
+  .budget-summary {
+    gap: var(--space-md);
+  }
+
+  .budget-bar__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .budget-bar__edit-row {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .budget-bar__edit-input {
+    width: 100%;
+  }
+}

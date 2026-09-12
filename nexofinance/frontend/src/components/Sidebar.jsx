@@ -26,7 +26,7 @@ const LINKS = [
   { to: "/perfil", label: "Mi perfil", icon: UserCircle },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -36,31 +36,40 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar__brand">
-        <span className="sidebar__brand-dot" />
-        NexoFinance
-      </div>
+    <>
+      {open && <div className="sidebar__backdrop" onClick={onClose} />}
 
-      <nav className="sidebar__nav">
-        {LINKS.map((link) => {
-          const Icon = link.icon;
-          return (
-            <NavLink key={link.to} to={link.to} className="sidebar__link">
-              <Icon size={17} className="sidebar__link-icon" />
-              {link.label}
-            </NavLink>
-          );
-        })}
-      </nav>
+      <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
+        <div className="sidebar__brand">
+          <span className="sidebar__brand-dot" />
+          NexoFinance
+        </div>
 
-      <div className="sidebar__footer">
-        <span className="sidebar__user">{user?.full_name}</span>
-        <button className="sidebar__logout" onClick={handleLogout}>
-          <LogOut size={14} style={{ marginRight: "0.4rem" }} />
-          Cerrar sesión
-        </button>
-      </div>
-    </aside>
+        <nav className="sidebar__nav">
+          {LINKS.map((link) => {
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className="sidebar__link"
+                onClick={onClose}
+              >
+                <Icon size={17} className="sidebar__link-icon" />
+                {link.label}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar__footer">
+          <span className="sidebar__user">{user?.full_name}</span>
+          <button className="sidebar__logout" onClick={handleLogout}>
+            <LogOut size={14} style={{ marginRight: "0.4rem" }} />
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

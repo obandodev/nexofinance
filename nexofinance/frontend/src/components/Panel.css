@@ -11,3 +11,10 @@
   color: var(--text);
   margin-bottom: var(--space-sm);
 }
+
+@media (max-width: 480px) {
+  .panel {
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+  }
+}

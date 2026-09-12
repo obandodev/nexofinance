@@ -156,3 +156,5 @@ alembic upgrade head
 - **Frontend:** Netlify.
 
 Configurar `CORS_ORIGINS` en el backend con la URL real del frontend, y `VITE_API_URL` en el frontend con la URL real del backend.
+
+#A

@@ -74,3 +74,17 @@
   font-size: var(--text-sm);
   font-weight: 600;
 }
+
+@media (max-width: 480px) {
+  .balance-card {
+    padding: var(--space-md);
+  }
+
+  .balance-card__value {
+    font-size: var(--text-2xl);
+  }
+
+  .balance-card__row {
+    gap: var(--space-md);
+  }
+}

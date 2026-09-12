@@ -6,6 +6,40 @@
 
 .app-layout__content {
   flex: 1;
+  min-width: 0;
   padding: var(--space-lg);
   max-width: 1200px;
+}
+
+.app-layout__menu-btn {
+  display: none;
+  position: fixed;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  z-index: 1001;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .app-layout__menu-btn {
+    display: flex;
+  }
+
+  .app-layout__content {
+    padding: calc(var(--space-lg) + 2.5rem) var(--space-sm) var(--space-md);
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-layout__content {
+    padding: calc(var(--space-lg) + 2.5rem) var(--space-xs) var(--space-sm);
+  }
 }

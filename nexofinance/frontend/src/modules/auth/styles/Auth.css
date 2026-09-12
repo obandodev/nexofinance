@@ -6,6 +6,14 @@
   background: var(--bg);
   position: relative;
   overflow: hidden;
+  padding: var(--space-sm);
+  box-sizing: border-box;
+}
+
+@media (max-width: 420px) {
+  .auth__card {
+    padding: var(--space-md);
+  }
 }
 
 .auth__glow {

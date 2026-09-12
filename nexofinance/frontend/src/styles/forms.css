@@ -36,9 +36,21 @@
   filter: brightness(1.08);
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.data-table__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .data-table th {
@@ -114,4 +126,70 @@
 .filters-bar__clear:hover {
   border-color: var(--red);
   color: var(--red);
+}
+
+/* --- Responsivo --- */
+@media (max-width: 640px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-row input,
+  .form-row select {
+    width: 100%;
+  }
+
+  .form-submit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* En pantallas muy angostas, las tablas se apilan como tarjetas
+   en vez de requerir scroll horizontal */
+@media (max-width: 560px) {
+  .table-responsive table.data-table,
+  .table-responsive .data-table thead,
+  .table-responsive .data-table tbody,
+  .table-responsive .data-table th,
+  .table-responsive .data-table td,
+  .table-responsive .data-table tr {
+    display: block;
+  }
+
+  .table-responsive .data-table thead {
+    display: none;
+  }
+
+  .table-responsive .data-table tr {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .table-responsive .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: none;
+    padding: 0.4rem 0;
+    text-align: right;
+  }
+
+  .table-responsive .data-table td::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    text-align: left;
+  }
+
+  .table-responsive .data-table td.data-table__actions {
+    justify-content: flex-end;
+  }
+
+  .table-responsive .data-table td.data-table__actions::before {
+    content: none;
+  }
 }

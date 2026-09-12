@@ -1,2 +1,30 @@
 .category-list { display:flex; flex-wrap:wrap; gap:.5rem; }
 .category-item { display:inline-flex; align-items:center; gap:.4rem; }
+
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.category-tag__action {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.category-tag__action:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .filters-bar {
+    gap: 0.4rem;
+  }
+}
